@@ -1,6 +1,5 @@
 package com.example.sohail.intratorr;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +7,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -71,12 +73,15 @@ public class Files extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_files,container,false);
         FloatingActionButton add_files = view.findViewById(R.id.add_files);
+        ExpandableListView fileList = view.findViewById(R.id.filesList);
+        fileList.setAdapter(new ArrayAdapter<String, Integer>(this.getContext(),));
         final FileListerDialog fileListerDialog = FileListerDialog.createFileListerDialog(this.getContext());
         fileListerDialog.setFileFilter(FileListerDialog.FILE_FILTER.ALL_FILES);
         fileListerDialog.setOnFileSelectedListener(new OnFileSelectedListener() {
             @Override
             public void onFileSelected(File file, String path) {
-                //your code here
+                Toast.makeText(getContext(),path,Toast.LENGTH_SHORT).show();
+
             }
         });
         add_files.setOnClickListener(new View.OnClickListener() {
