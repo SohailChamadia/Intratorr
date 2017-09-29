@@ -4,6 +4,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +15,8 @@ import android.widget.ExpandableListView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 
 import yogesh.firzen.filelister.FileListerDialog;
 import yogesh.firzen.filelister.OnFileSelectedListener;
@@ -36,6 +41,11 @@ public class Files extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+    private ArrayList<FilesRow> filesList = new ArrayList<>();
+    private RecyclerView filesRecyclerView;
+    private FilesViewAdapter fAdapter;
+
 
     public Files() {
         // Required empty public constructor
@@ -73,15 +83,24 @@ public class Files extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_files,container,false);
         FloatingActionButton add_files = view.findViewById(R.id.add_files);
-        ExpandableListView fileList = view.findViewById(R.id.filesList);
-        fileList.setAdapter(new ArrayAdapter<String, Integer>(this.getContext(),));
+
+        filesRecyclerView = view.findViewById(R.id.filesList);
+        fAdapter = new FilesViewAdapter(filesList);
+        RecyclerView.LayoutManager fLayoutManager = new LinearLayoutManager(view.getContext());
+        filesRecyclerView.setLayoutManager(fLayoutManager);
+        filesRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        filesRecyclerView.setAdapter(fAdapter);
+        final DecimalFormat df = new DecimalFormat("#.##");
         final FileListerDialog fileListerDialog = FileListerDialog.createFileListerDialog(this.getContext());
         fileListerDialog.setFileFilter(FileListerDialog.FILE_FILTER.ALL_FILES);
         fileListerDialog.setOnFileSelectedListener(new OnFileSelectedListener() {
             @Override
             public void onFileSelected(File file, String path) {
                 Toast.makeText(getContext(),path,Toast.LENGTH_SHORT).show();
-
+                FilesRow filesRow = new FilesRow(file.getName(),file.getPath(),
+                        String.valueOf(df.format(file.length()/(1024.0*1024.0)))+"MB");
+                filesList.add(filesRow);
+                fAdapter.notifyDataSetChanged();
             }
         });
         add_files.setOnClickListener(new View.OnClickListener() {
