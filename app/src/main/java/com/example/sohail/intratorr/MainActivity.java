@@ -88,13 +88,11 @@ public class MainActivity extends AppCompatActivity {
                 if (prevMenuItem != null) {
                     prevMenuItem.setChecked(false);
                 }
-                else
-                {
+                else {
                    navigation.getMenu().getItem(0).setChecked(false);
                 }
                 navigation.getMenu().getItem(position).setChecked(true);
                 prevMenuItem = navigation.getMenu().getItem(position);
-
             }
 
             @Override

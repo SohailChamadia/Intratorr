@@ -3,7 +3,8 @@
     <string name="title_download">Download</string>
     <string name="title_history">History</string>
     <string name="title_files">Files</string>
-
+    <string name="namma_per_uh">FileLister</string>
+    <string name="create_folder_hint">Enter Folder Name Here</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

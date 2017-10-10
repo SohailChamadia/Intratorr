@@ -1,10 +1,15 @@
 package com.example.sohail.intratorr;
 
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -12,14 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-import yogesh.firzen.filelister.FileListerDialog;
-import yogesh.firzen.filelister.OnFileSelectedListener;
 
 
 /**
@@ -45,7 +50,8 @@ public class Files extends Fragment {
     private ArrayList<FilesRow> filesList = new ArrayList<>();
     private RecyclerView filesRecyclerView;
     private FilesViewAdapter fAdapter;
-
+    private SearchView searchView;
+    private ImageView downloadView;
 
     public Files() {
         // Required empty public constructor
@@ -81,32 +87,56 @@ public class Files extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_files,container,false);
+        final View view = inflater.inflate(R.layout.fragment_files,container,false);
         FloatingActionButton add_files = view.findViewById(R.id.add_files);
+        searchView = view.findViewById(R.id.searchFiles);
+        searchView.setIconified(false);
+        searchView.clearFocus();
 
         filesRecyclerView = view.findViewById(R.id.filesList);
-        fAdapter = new FilesViewAdapter(filesList);
+        fAdapter = new FilesViewAdapter(filesList,getActivity().findViewById(R.id.viewPager));
         RecyclerView.LayoutManager fLayoutManager = new LinearLayoutManager(view.getContext());
         filesRecyclerView.setLayoutManager(fLayoutManager);
         filesRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        filesRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+
+        filesRecyclerView.setHasFixedSize(true);
         filesRecyclerView.setAdapter(fAdapter);
         final DecimalFormat df = new DecimalFormat("#.##");
         final FileListerDialog fileListerDialog = FileListerDialog.createFileListerDialog(this.getContext());
         fileListerDialog.setFileFilter(FileListerDialog.FILE_FILTER.ALL_FILES);
+
         fileListerDialog.setOnFileSelectedListener(new OnFileSelectedListener() {
             @Override
             public void onFileSelected(File file, String path) {
-                Toast.makeText(getContext(),path,Toast.LENGTH_SHORT).show();
                 FilesRow filesRow = new FilesRow(file.getName(),file.getPath(),
                         String.valueOf(df.format(file.length()/(1024.0*1024.0)))+"MB");
-                filesList.add(filesRow);
-                fAdapter.notifyDataSetChanged();
+                if(contains_file(filesRow)){
+                    Snackbar.make(view,"File already hosted",Snackbar.LENGTH_SHORT).show();
+                }
+                else{
+                    filesList.add(filesRow);
+                    Snackbar.make(view,file.getName() + " added",Snackbar.LENGTH_SHORT).show();
+                    fAdapter.notifyDataSetChanged();
+                }
             }
         });
         add_files.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 fileListerDialog.show();
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                fAdapter.getFilter().filter(s);
+                return false;
             }
         });
         return view;
@@ -139,5 +169,14 @@ public class Files extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public boolean contains_file(FilesRow obj) {
+        for(FilesRow file:filesList){
+            if((file.getPath()).equals(obj.getPath())){
+                return true;
+            }
+        }
+        return false;
     }
 }
